@@ -13,6 +13,8 @@
 #define CMDBUF_SIZE	80	// enough for one VGA text line
 
 
+
+
 struct Command {
 	const char *name;
 	const char *desc;
@@ -26,7 +28,8 @@ static struct Command commands[] = {
 };
 #define NCOMMANDS (sizeof(commands)/sizeof(commands[0]))
 
-unsigned read_eip();
+unsigned read_eip() __attribute__((noinline));
+
 
 /***** Implementations of basic kernel monitor commands *****/
 
@@ -128,6 +131,8 @@ monitor(struct Trapframe *tf)
 // return EIP of caller.
 // does not work if inlined.
 // putting at the end of the file seems to prevent inlining.
+
+
 unsigned
 read_eip()
 {
