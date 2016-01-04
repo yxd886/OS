@@ -206,6 +206,9 @@ i386_vm_init(void)
 	//    - pages -- kernel RW, user NONE
 	//    - the read-only version mapped at UPAGES -- kernel R, user R
 	// Your code goes here:
+	
+	n= ROUNDUP(npage*sizeof(struct Page),PGSIZE);
+		boot_map_segment(pgdir,UPAGES,n,PADDR(pages),PTE_U | PTE_P);
 
 	//////////////////////////////////////////////////////////////////////
 	// Map the 'envs' array read-only by the user at linear address UENVS
