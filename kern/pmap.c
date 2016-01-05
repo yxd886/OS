@@ -184,6 +184,7 @@ i386_vm_init(void)
 	//////////////////////////////////////////////////////////////////////
 	// Make 'envs' point to an array of size 'NENV' of 'struct Env'.
 	// LAB 3: Your code here.
+	envs = boot_alloc(NENV * sizeof (struct Env),PGSIZE);
 
 	//////////////////////////////////////////////////////////////////////
 	// Now that we've allocated the initial kernel data structures, we set
@@ -216,6 +217,8 @@ i386_vm_init(void)
 	// Permissions:
 	//    - envs itself -- kernel RW, user NONE
 	//    - the image of envs mapped at UENVS  -- kernel R, user R
+	boot_map_segment (pgdir, UENVS, ROUNDUP(NENV*sizeof(struct Env),PGSIZE),PADDR((uintptr_t)envs),PTE_U | PTE_P);
+	
 
 
 	//////////////////////////////////////////////////////////////////////
@@ -755,6 +758,29 @@ int
 user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 {
 	// LAB 3: Your code here. 
+	int i;
+	unsigned int begin;
+	begin = (unsigned int )va / PGSIZE*PGSIZE+PGSIZE;
+	if((pgdir_walk(env->env_pgdir,va,0)!=NULL)&&((unsigned int)*pgdir_walk(env->env_pgdir,va,0)&(perm|PTE_P))==(perm|PTE_P))
+		{
+		for(;begin<((unsigned int)va+len)/PGSIZE*PGSIZE;begin+=PGSIZE)
+			{
+			if(begin >= ULIM)
+				{
+				user_mem_check_addr=begin;
+				}
+			if((pgdir_walk(env->env_pgdir,va,0)!=NULL)&&((unsigned int)*pgdir_walk(env->env_pgdir,(void*)begin,0)&(perm|PTE_P))==(perm|PTE_P))
+				{
+				}
+			else{
+				user_mem_check_addr = begin;
+				return - E_FAULT;
+				}
+			}
+		}else{
+		      user_mem_check_addr = (unsigned int)va;
+			  return -E_FAULT;
+			}
 
 	return 0;
 }
